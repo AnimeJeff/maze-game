@@ -192,7 +192,17 @@ void Game::keyboard() {
         maze.setGenerationAlgorithm(Maze::KRUSKALS);
         window.setTitle(maze.getCurrentGenerationAlgorithm());
     }
-    
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
+    {
+        maze.setGenerationAlgorithm(Maze::ALDOUS_BRODER);
+        window.setTitle(maze.getCurrentGenerationAlgorithm());
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
+    {
+        maze.setGenerationAlgorithm(Maze::BINARY_TREE);
+        window.setTitle(maze.getCurrentGenerationAlgorithm());
+    }
+
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
         window.clear(sf::Color::White);

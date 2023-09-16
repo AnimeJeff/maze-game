@@ -196,7 +196,6 @@ private:
 		};
 		void generate() override
 		{
-			
 			if (visitedCells == maze->cellCount) // should be when currentcell is invalid
 			{
 				generationFinished = true;
@@ -230,10 +229,12 @@ private:
 							maze->createPath(rndNeighbour, i);
 							visitedCells++;
 							currentCell = i;
-							break;
+							return;
 						}
 					}
 				}
+				// fails to find target because the starting point can be anywhere
+				firstUnvisitedCell = 0;
 			}
 		};
 		void reset() override 
@@ -260,7 +261,7 @@ private:
 		}
 		std::string name() override
 		{
-			return "Kruskal's Algorithm";
+			return "Randomised Kruskal's Algorithm";
 		}
 		void generate() override
 		{
@@ -316,7 +317,7 @@ private:
 		void reset() override
 		{
 			generationFinished = false;
-			currentCell = startCell;
+			currentCell = -1;
 			edges.clear();
 			for (int i = 0; i < maze->cellCount; i++)
 			{
@@ -346,6 +347,140 @@ private:
 		
 	};
 
+	class AldousBroder : virtual public Algorithm
+	{
+	public:
+		AldousBroder(Maze* maze, int startCell) :Algorithm(maze, startCell)
+		{
+			setStartCell(startCell);
+		}
+		std::string name() override
+		{
+			return "Aldous-Broder Algorithm";
+		}
+		void generate() override
+		{
+			if (visitedCells == maze->cellCount)
+			{
+				generationFinished = true;
+				return;
+			}
+			std::vector<int> neighbours = maze->getAllNeighbours(currentCell);
+			int nextCellIndex = maze->random(neighbours);
+			if ((maze->cellAt(nextCellIndex) & VISITED) == 0)
+			{
+				maze->createPath(currentCell, nextCellIndex);
+				visitedCells++;
+			}
+			currentCell = nextCellIndex;
+		}
+		void reset() override
+		{
+			generationFinished = false;
+			currentCell = startCell;
+			maze->cells[startCell] |= VISITED;
+			visitedCells = 1;
+		}
+	private:
+		int visitedCells = 0;
+	};
+
+	class BinaryTree : virtual public Algorithm
+	{
+	public:
+		BinaryTree(Maze* maze, int startCell) :Algorithm(maze, startCell)
+		{
+			setStartCell(startCell);
+		}
+		std::string name() override
+		{
+			return "Binary Tree Algorithm";
+		}
+		void generate() override
+		{
+			if (generationFinished) return;
+			
+			auto northAndEastCells = getNorthAndEastCells(currentCell);
+			if (!northAndEastCells.empty())
+			{
+				int northOrEastCell = maze->random(northAndEastCells);
+				maze->createPath(currentCell, northOrEastCell);
+			}
+			currentCell++;
+			if (currentCell == startCell)
+			{
+				generationFinished = true;
+				return;
+			}
+			else if (currentCell >= maze->cellCount)
+			{
+				currentCell = 0;
+			}
+		}
+		inline std::vector<int> getNorthAndEastCells(int cellIndex)
+		{
+			std::vector<int> cells;
+			int northCellIndex = cellIndex - maze->cols;
+			int eastCellIndex = cellIndex +1;
+
+			if (northCellIndex >= 0)
+			{
+				cells.push_back(northCellIndex);
+			}
+			if (cellIndex % maze->cols != maze->cols - 1 && eastCellIndex < maze->cellCount)
+			{
+				cells.push_back(eastCellIndex);
+			}
+
+			return cells;
+		}
+
+		void reset() override
+		{
+			generationFinished = false;
+			currentCell = startCell;
+			endCell = startCell;
+			maze->cells[startCell] |= VISITED;
+			visitedCells = 1;
+		}
+	private:
+		int visitedCells = 0;
+		int endCell = 0;
+	};
+
+	
+	std::vector<int> getAllNeighbours(int cellIndex)
+	{
+		std::vector<int> neighbours;
+		int northCellIndex = cellIndex - cols;
+		int southCellIndex = cellIndex + cols;
+		int westCellIndex = cellIndex - 1;
+		int eastCellIndex = cellIndex + 1;
+
+		if (northCellIndex >= 0)
+		{
+			neighbours.push_back(northCellIndex);
+		}
+
+		if (southCellIndex < cells.size())
+		{
+			neighbours.push_back(southCellIndex);
+		}
+
+		if (cellIndex % cols != 0 && westCellIndex >= 0)
+		{
+			neighbours.push_back(westCellIndex);
+		}
+
+		if (cellIndex % cols != cols - 1 && eastCellIndex < cells.size())
+		{
+			neighbours.push_back(eastCellIndex);
+		}
+
+		return neighbours;
+	}
+
+
 	friend Dfs;
 	friend Prims;
 	int generationStartCell;
@@ -368,7 +503,9 @@ public:
 		DFS,
 		PRIMS,
 		HUNT_AND_KILL,
-		KRUSKALS
+		KRUSKALS,
+		ALDOUS_BRODER,
+		BINARY_TREE
 	};
 	void setGenerationAlgorithm(AlgorithmType algorithm)
 	{
@@ -389,6 +526,12 @@ public:
 			break;
 		case HUNT_AND_KILL:
 			generationAlgo = std::make_shared<HuntAndKill>(this, generationStartCell);
+			break;
+		case ALDOUS_BRODER:
+			generationAlgo = std::make_unique<AldousBroder>(this, generationStartCell);
+			break;
+		case BINARY_TREE:
+			generationAlgo = std::make_unique<BinaryTree>(this, generationStartCell);
 			break;
 		default:
 			break;
