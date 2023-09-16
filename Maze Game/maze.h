@@ -10,27 +10,38 @@
 #include <SFML/System/Vector2.hpp>
 #include <assert.h>
 #include <stack>
+#include <unordered_set>
 class Maze
 {
 private:
-	int random(int max = 10000) {
-		assert(max <= 10000);
-		return intdist(mt) % max;
-	}
 	class Algorithm 
 	{
+		
 	public:
 		Algorithm(Maze* maze, int startCell) :maze(maze), startCell(startCell) {}
 		virtual std::string name() = 0;
 		virtual void generate() = 0;
 		virtual void reset() = 0;
-		void setStartCell(int startCell) {
+		void setStartCell(int startCell)
+		{
 			this->startCell = startCell;
+			currentCell = startCell;
 			reset();
 		};
+		bool finishedGenerating() const
+		{
+			return generationFinished;
+		}
+		int getCurrentCell()
+		{
+			return currentCell;
+		}
 	protected:
 		Maze* maze;
 		int startCell;
+		bool generationFinished = false;
+		int currentCell = 0;
+		
 	};
 	
 	class Dfs : virtual public Algorithm
@@ -44,7 +55,13 @@ private:
 		{
 			return "Depth-First Search";
 		}
-		void generate() override {
+		void generate() override
+		{
+			if (visitedCells == maze->cellCount)
+			{
+				generationFinished = true;
+				return;
+			}
 			std::vector<int> neighbours = maze->getNeighbours(q.back());
 			while (neighbours.empty())
 			{
@@ -52,20 +69,26 @@ private:
 				maze->cells[q.back()] |= CellState::VISITED_TWICE;
 				neighbours = maze->getNeighbours(q.back());
 			}
-			int nextCell = neighbours[maze->random(neighbours.size())];
-			maze->createPath(q.back(), nextCell);
-			q.push_back(nextCell);
+			int nextCellIndex = maze->random(neighbours);
+			maze->createPath(q.back(), nextCellIndex);
+			visitedCells++;
+			currentCell = nextCellIndex;
+			q.push_back(nextCellIndex);
 		}
 		void reset() override
 		{
+			visitedCells = 0;
+			generationFinished = false;
 			q.clear();
 			q.push_back(startCell);
+			currentCell = startCell;
 			maze->cells[startCell] |= VISITED;
-			maze->visitedCellCount++;
+			visitedCells++;
 		}
 	private:
 		std::deque<int> q;
-		};
+		int visitedCells = 0;
+	};
 	
 	class Prims : public Algorithm
 	{
@@ -80,7 +103,7 @@ private:
 		}
 		void generate() override {
 			if (frontiers.empty()) {
-				maze->visitedCellCount = maze->cellCount;
+				generationFinished = true;
 				return;
 			}
 			int frontier;
@@ -90,6 +113,7 @@ private:
 			std::set<int>::iterator it = frontiers.begin();
 			std::advance(it, rnd);
 			frontier = *it;
+			currentCell = frontier;
 			// removing the frontier
 			frontiers.erase(frontier);
 			// getting a random neighbour that has been visited before
@@ -101,17 +125,18 @@ private:
 			{
 				frontiers.insert(f);
 			}
-			
-			return;
+
 		}
 		void reset() override
 		{
+			generationFinished = false;
 			frontiers.clear();
 			for (const auto& frontier : maze->getNeighbours(startCell))
 			{
 				frontiers.insert(frontier);
 			}
 			maze->cells[startCell] |= VISITED;
+			currentCell = startCell;
 			maze->visitedCellCount++;
 		}
 	private:
@@ -131,18 +156,25 @@ private:
 		}
 		void generate() override
 		{
+			if (stack.empty()) {
+				generationFinished = true;
+				return;
+			}
 			auto neighbours = maze->getNeighbours(stack.top());
 			if (neighbours.empty())
 			{
 				stack.pop();
 				return;
 			}
-			auto neighbour = neighbours[maze->random(neighbours.size())];
-			maze->createPath(stack.top(), neighbour);
+			currentCell = stack.top();
+			int neighbour = maze->random(neighbours);
+			maze->createPath(currentCell, neighbour);
 			stack.push(neighbour);
 		}
 		void reset() override
 		{
+			currentCell = startCell;
+			generationFinished = false;
 			stack = std::stack<int>();
 			stack.push(startCell);
 		}
@@ -152,34 +184,191 @@ private:
 
 	class HuntAndKill: public Algorithm
 	{
+	public:
+		HuntAndKill(Maze* maze, int startCell) :Algorithm(maze, startCell)
+		{
+			currentCell = startCell;
+			setStartCell(startCell);
+		}
 		std::string name() override
 		{
 			return "Hunt and Kill!";
 		};
 		void generate() override
 		{
-
+			
+			if (visitedCells == maze->cellCount) // should be when currentcell is invalid
+			{
+				generationFinished = true;
+				return;
+			}
+			auto neighbours = maze->getNeighbours(currentCell);
+			// if there are neighbours
+			if (!neighbours.empty())
+			{
+				auto neighbour = neighbours[maze->random(neighbours.size())];
+				auto rndNeighbour = neighbours[maze->random(neighbours.size())];
+				maze->createPath(currentCell, rndNeighbour);
+				visitedCells++;
+				currentCell = rndNeighbour;
+			}
+			// if no neighbours
+			else
+			{
+				// hunting for an unvisited cell with a visited neighbour
+				for (int i = firstUnvisitedCell; i < maze->cellCount; i++)
+				{
+					bool visited = (maze->cellAt(i) & VISITED) == VISITED;
+					if (!visited)
+					{
+						// checking if any of its neighbours have been visited
+						auto visitedNeighbours = maze->getNeighbours(i, true);
+						if (!visitedNeighbours.empty())
+						{
+							firstUnvisitedCell = i + 1;
+							auto rndNeighbour = visitedNeighbours[maze->random(visitedNeighbours.size())];
+							maze->createPath(rndNeighbour, i);
+							visitedCells++;
+							currentCell = i;
+							break;
+						}
+					}
+				}
+			}
 		};
 		void reset() override 
 		{
+			visitedCells = 0;
+			generationFinished = false;
+			firstUnvisitedCell = 0;
+			currentCell = startCell;
+			maze->cells[startCell] |= VISITED;
+			visitedCells++;
 		};
+	private:
+		
+		int firstUnvisitedCell = 0;
+		int visitedCells = 0;
 	};
 
-
+	class Kruskals : public Algorithm
+	{
+	public:
+		Kruskals(Maze* maze, int startCell) :Algorithm(maze, startCell)
+		{
+			setStartCell(startCell);
+		}
+		std::string name() override
+		{
+			return "Kruskal's Algorithm";
+		}
+		void generate() override
+		{
+			if (edges.empty())
+			{ 
+				generationFinished = true;
+				map.clear();
+				return;
+			};
+			//select a random unvisited cell
+			auto cell = edges.back();
+			edges.pop_back();
+			auto s1 = map.find(cell.first);
+			auto s2 = map.find(cell.second);
+			
+			if (s1 == map.end() || s2 == map.end())
+			{
+				// both do not belong to a set so both are unvisited
+				if (s1 == map.end() && s2 == map.end())
+				{
+					maze->cells[cell.first] |= VISITED;
+					maze->visitedCellCount++;
+					maze->createPath(cell.first, cell.second);
+					map[cell.first] = map[cell.second] = std::make_shared<std::set<int>>(std::set<int>{cell.first, cell.second});
+				}
+				else {
+					// one of them has a set
+					if (s1 == map.end())
+					{
+						s2->second->insert(cell.first);
+						map[cell.first] = s2->second;
+					}
+					else {
+						s1->second->insert(cell.second);
+						map[cell.second] = s1->second;
+					}
+					maze->createPath(cell.first, cell.second);
+				}
+			}
+			else if (map[cell.first] != map[cell.second]) // different sets
+			{
+				maze->createPath(cell.first, cell.second);
+				auto set2 = *map[cell.second];
+				for (std::set<int>::iterator it = set2.begin(); it != set2.end(); )
+				{
+					map[*it]= map[cell.first];
+					map[cell.first]->insert(*it);
+					it++;
+				}
+			}
+			
+		}
+		void reset() override
+		{
+			generationFinished = false;
+			currentCell = startCell;
+			edges.clear();
+			for (int i = 0; i < maze->cellCount; i++)
+			{
+				
+				int col = i % maze->cols;
+				if (i >= maze->cols) {
+					static int rows = 0;
+					rows++;
+					edges.push_back({ i , i - maze->cols });
+					//std::cout << "rows " << rows << "\n";
+				}
+				if (col > 0)
+				{
+					static int cols = 0;
+					edges.push_back({ i , i - 1 });
+					cols++;
+					//std::cout << "cols " << cols << "\n";
+				}
+				map.clear();
+			}
+			std::shuffle(std::begin(edges), std::end(edges), maze->mt);
+		}
+		std::unordered_map<int, std::shared_ptr<std::set<int>>> map; //
+		std::vector<std::pair<int,int>> edges;
+		int currentSetCount = 0;
+	private:
+		
+	};
 
 	friend Dfs;
 	friend Prims;
 	int generationStartCell;
 	std::shared_ptr<Algorithm> generationAlgo = nullptr;
 
-	
+	int random(int max = 10000) {
+		assert(max <= 10000);
+		return intdist(mt) % max;
+	}
+
+	int random(std::vector<int>& list) {
+		int out;
+		std::sample(list.begin(), list.end(), &out, 1, mt);
+		return out;
+	}
 
 public:
 	enum AlgorithmType {
 		RECURSIVE_BACKTRACKING,
 		DFS,
 		PRIMS,
-		HUNT_AND_KILL
+		HUNT_AND_KILL,
+		KRUSKALS
 	};
 	void setGenerationAlgorithm(AlgorithmType algorithm)
 	{
@@ -192,8 +381,14 @@ public:
 		case DFS:
 			generationAlgo = std::make_shared<Dfs>(this, generationStartCell);
 			break;
+		case KRUSKALS:
+			generationAlgo = std::make_unique<Kruskals>(this, generationStartCell);
+			break;
 		case PRIMS:
 			generationAlgo = std::make_shared<Prims>(this, generationStartCell);
+			break;
+		case HUNT_AND_KILL:
+			generationAlgo = std::make_shared<HuntAndKill>(this, generationStartCell);
 			break;
 		default:
 			break;
@@ -204,19 +399,20 @@ public:
 	{
 		return generationAlgo->name();
 	}
+	int getCurrentGenerationCell() {
+		return generationAlgo->getCurrentCell();
+	}
 public:
 	inline void generate() {
 		generationAlgo->generate();
 	}
 	inline bool finishedGenerating()
 	{
-		return visitedCellCount == cellCount;
+		return generationAlgo->finishedGenerating();
 	}
 
 	void Bfs();
 	void A_Star();
-
-
 public:
 	Maze(int rows, int cols, int cellSize)
 		:rows(rows), cols(cols), cellSize(cellSize), cells(rows* cols), cellCount(cells.size())
@@ -317,7 +513,6 @@ public:
 		return visitedCellCount;
 	}
 
-
 	enum CellPath {
 		NORTH_PATH = 0b0000000001,
 		EAST_PATH = 0b0000000010,
@@ -334,21 +529,22 @@ public:
 	};
 	void print_maze();
 	void reset();
-	void setSearchStart(int row, int col) // sets the cell to start generating maze with either DFS or BFS
+	inline void setSearchStart(int row, int col) 
 	{
-		generationStartCell = getCellIndex(row, col);
-		cells[generationStartCell] |= CellState::VISITED;
-		visitedCellCount++;
+		setSearchStart(getCellIndex(row, col));
+	}
+	void setSearchStart(int cellIndex) // sets the starting cell for the generation algorithm
+	{
+		generationStartCell = cellIndex;
 		if (generationAlgo)
 		{
-			reset();
+			generationAlgo->setStartCell(generationStartCell);
 		}
+		reset();
 	}
-	
 	
 	std::vector<int> path;
 	std::vector<int> cells;
-
 private:
 	inline bool hasPath(int cellIndex, CellState path) {
 		return (cells[cellIndex] & path) == path;
@@ -358,25 +554,25 @@ private:
 		int diff = cellIndex2 - cellIndex1;
 		if (diff == -cols) // north path
 		{
-			cells[cellIndex1] |= NORTH_PATH;
+			cells[cellIndex1] |= VISITED | NORTH_PATH;
 			cells[cellIndex2] |= VISITED | SOUTH_PATH;
 			visitedCellCount++;
 		}
 		else if (diff == cols) // south path
 		{
-			cells[cellIndex1] |= SOUTH_PATH;
+			cells[cellIndex1] |= VISITED | SOUTH_PATH;
 			cells[cellIndex2] |= VISITED | NORTH_PATH;
 			visitedCellCount++;
 		}
 		else if (diff == -1) // west path
 		{
-			cells[cellIndex1] |= WEST_PATH;
+			cells[cellIndex1] |= VISITED | WEST_PATH;
 			cells[cellIndex2] |= VISITED | EAST_PATH;
 			visitedCellCount++;
 		}
 		else if (diff == 1) // east path
 		{
-			cells[cellIndex1] |= EAST_PATH;
+			cells[cellIndex1] |= VISITED | EAST_PATH;
 			cells[cellIndex2] |= VISITED | WEST_PATH;
 			visitedCellCount++;
 		}

@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <SFML/Graphics.hpp>
-
+#include <chrono>
+#include <thread>
 void Game::init() {
     verticalWall.setFillColor(sf::Color::Black);
     horizontalWall.setFillColor(sf::Color::Black);
@@ -10,8 +11,8 @@ void Game::init() {
 
     maze.setGenerationAlgorithm(Maze::DFS);
 
-	window.create(sf::VideoMode(windowWidth, windowHeight), "DFS, BFS, A*");
-	window.setFramerateLimit(60);
+	window.create(sf::VideoMode(windowWidth, windowHeight), maze.getCurrentGenerationAlgorithm());
+	window.setFramerateLimit(120);
     window.clear(sf::Color::White);
     draw();
     window.display();
@@ -48,7 +49,7 @@ void Game::draw()
             //std::cout << "draw row: " << row << " col: " << col << "\n" ;
             int cellIndex = maze.getCellIndex(row, col);
             int cell = maze.cellAt(cellIndex);
-            if (maze.getVisitedCellCount() == maze.getCellCount()) // All of the cells has been visited - maze is generated.
+            if (maze.finishedGenerating()) // All of the cells has been visited - maze is generated.
             { 
                 if (maze.isPathfindingStartCell(cellIndex))
                 {
@@ -69,17 +70,21 @@ void Game::draw()
             }
             else
             {
-                if ((cell & maze.VISITED_TWICE) == maze.VISITED_TWICE)
+                if (cellIndex == maze.getCurrentGenerationCell())
+                {
+                    cellSquare.setFillColor(sf::Color::Cyan);
+                }
+                else if ((cell & maze.VISITED_TWICE) == maze.VISITED_TWICE)
                 {
                     cellSquare.setFillColor(sf::Color::Green);
                 }
                 else if ((cell & maze.VISITED) == maze.VISITED)
                 {
-                    cellSquare.setFillColor(sf::Color::Yellow);
+                    cellSquare.setFillColor(sf::Color(255, 255, 208));
                 }
                 else
                 {
-                    cellSquare.setFillColor(sf::Color::Red);
+                    cellSquare.setFillColor(sf::Color::Black);
                 }
             }
             window.draw(cellSquare);
@@ -115,7 +120,7 @@ void Game::mouse() {
         int cellIndex = maze.getCellIndexFromMousePos(sf::Mouse::getPosition(window));
         std::cout << "row: " << rowCol.x << '\t' << "col:" << rowCol.y << '\t' << "cell index: " << cellIndex << std::endl;
         button.checkClick(getGlobalMousePos());
-        if (maze.getVisitedCellCount() == maze.getCellCount() &&
+        if (maze.finishedGenerating() &&
             (!maze.hasPathfindingStartCell() || !maze.hasPathfindingEndCell()))
         {
             if (!maze.hasPathfindingStartCell())
@@ -132,6 +137,10 @@ void Game::mouse() {
     }
     else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) 
     {
+        int cellIndex = maze.getCellIndexFromMousePos(sf::Mouse::getPosition(window));
+        maze.setSearchStart(cellIndex);
+        draw();
+        window.display();
         std::cout << "right\n";
     }
 }
@@ -173,38 +182,53 @@ void Game::keyboard() {
         maze.setGenerationAlgorithm(Maze::PRIMS);
         window.setTitle(maze.getCurrentGenerationAlgorithm());
     }
-
-    if (!maze.finishedGenerating())
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
     {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-        {
-            do {
-                maze.generate();
-                window.clear(sf::Color::White);
-                draw();
-                window.display();
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { break; }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { break; window.close(); }
-            }
-            while (maze.getVisitedCellCount() < maze.getCellCount());
-            /*maze.q.clear();
-            for (auto& cell : maze.cells) {
-                cell &= (~(1 << (5 - 1)));
-                cell &= (~(1 << (6 - 1)));
-            }*/
+        maze.setGenerationAlgorithm(Maze::HUNT_AND_KILL);
+        window.setTitle(maze.getCurrentGenerationAlgorithm());
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
+    {
+        maze.setGenerationAlgorithm(Maze::KRUSKALS);
+        window.setTitle(maze.getCurrentGenerationAlgorithm());
+    }
+    
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    {
+        window.clear(sf::Color::White);
+        maze.generate();
+        draw();
+        window.display();
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+    {
+        static int dt;
+        static int speed = 120;
+        static auto microsecondsPerFrame = sf::microseconds(1000000 / speed).asMicroseconds();
+        bool limitFPS = false;
+        do {
+            sf::Clock c;
+            c.restart();
+            maze.generate();
             window.clear(sf::Color::White);
             draw();
             window.display();
-            
-        }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { break; }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { break; window.close(); }
+            dt = microsecondsPerFrame - c.getElapsedTime().asMicroseconds();
+            std::this_thread::sleep_for(std::chrono::microseconds(dt));
+        } while (!maze.finishedGenerating());
+        
+        window.clear(sf::Color::White);
+        draw();
+        window.display();
+
     }
-
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
     {
         maze.reset();
         window.clear(sf::Color::White);
-        while (maze.getVisitedCellCount() < maze.getCellCount())
+        while (!maze.finishedGenerating())
         {
             maze.generate();
         }

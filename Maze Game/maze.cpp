@@ -21,11 +21,13 @@ void Maze::reset()
 {
     std::fill(cells.begin(), cells.end(), 0);
     visitedCellCount = 0;
-    generationAlgo.get()->reset();
-
     pathfindingStartCell = 0;
     pathfindingEndCell = 0;
     path.clear();
+    if (generationAlgo)
+    {
+        generationAlgo.get()->reset();
+    }
 }
 
 
