@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)sfml\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)sfml\includes;$(ProjectDir)pathfinding;$(ProjectDir)generating;$(ProjectDir)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -94,7 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)sfml\includes</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)sfml\includes;$(ProjectDir)pathfinding;$(ProjectDir)generating;$(ProjectDir)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -135,15 +135,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="generating\AldousBroder.h" />
+    <ClInclude Include="pathfinding\AStar.h" />
+    <ClInclude Include="generating\BinaryTree.h" />
+    <ClInclude Include="pathfinding\BreadthFirstSearch.h" />
     <ClInclude Include="Button.h" />
+    <ClInclude Include="generating\DepthFirstSearch.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="maze.h" />
+    <ClInclude Include="generating\GenerationAlgorithm.h" />
+    <ClInclude Include="generating\HuntAndKill.h" />
+    <ClInclude Include="generating\Kruskals.h" />
+    <ClInclude Include="Maze.h" />
+    <ClInclude Include="pathfinding\PathfindingAlgorithm.h" />
+    <ClInclude Include="generating\Prims.h" />
+    <ClInclude Include="generating\RecursiveBacktracking.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="generating\AldousBroder.cpp" />
+    <ClCompile Include="pathfinding\AStar.cpp" />
+    <ClCompile Include="generating\BinaryTree.cpp" />
+    <ClCompile Include="pathfinding\BreadthFirstSearch.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="generating\DepthFirstSearch.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="generating\GenerationAlgorithm.cpp" />
+    <ClCompile Include="generating\HuntAndKill.cpp" />
+    <ClCompile Include="generating\Kruskals.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="maze.cpp" />
+    <ClCompile Include="Maze.cpp" />
+    <ClCompile Include="pathfinding\PathfindingAlgorithm.cpp" />
+    <ClCompile Include="generating\Prims.cpp" />
+    <ClCompile Include="generating\RecursiveBacktracking.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

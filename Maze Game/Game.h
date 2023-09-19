@@ -1,7 +1,6 @@
 #pragma once
 #include "Maze.h"
 #include "SFML/Graphics.hpp"
-#include "Button.h"
 class Game
 {	
 private:
@@ -10,8 +9,6 @@ private:
 	sf::RectangleShape verticalWall   { sf::Vector2f(cellWallThickness * 2, cellSize) };
 	sf::RectangleShape horizontalWall { sf::Vector2f(cellSize, cellWallThickness * 2) };
 	sf::RectangleShape cellSquare     { sf::Vector2f(cellSize, cellSize) };
-
-	Button button;
 
 	int rows                 = 40;
 	int cols                 = 50;
@@ -22,7 +19,7 @@ private:
 	
 	sf::Color pathfindingStartCellColour = sf::Color::Green;
 	sf::Color pathfindingEndCellColour = sf::Color::Red;
-	sf::RenderTexture mazeTex;
+
 public:
 	void init();
 	void draw();

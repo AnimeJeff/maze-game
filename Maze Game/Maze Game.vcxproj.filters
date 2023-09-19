@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\GenerationAlgorithms">
+      <UniqueIdentifier>{fbccddb2-19bf-471d-be98-f3596bd532d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GenerationAlgorithms">
+      <UniqueIdentifier>{0ae89018-a3c1-428d-bd95-d866973c8f56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PathfindingAlgorithm">
+      <UniqueIdentifier>{bbd82576-2026-42e3-a393-91e374b38645}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PathfindingAlgorithm">
+      <UniqueIdentifier>{f51a9be7-b874-4148-a38c-e5c686a4139a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h">
@@ -21,8 +33,41 @@
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="maze.h">
+    <ClInclude Include="Maze.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\HuntAndKill.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\Kruskals.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\Prims.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\RecursiveBacktracking.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\GenerationAlgorithm.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\DepthFirstSearch.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\BinaryTree.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="generating\AldousBroder.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="pathfinding\BreadthFirstSearch.h">
+      <Filter>Header Files\PathfindingAlgorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="pathfinding\PathfindingAlgorithm.h">
+      <Filter>Header Files\PathfindingAlgorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="pathfinding\AStar.h">
+      <Filter>Header Files\PathfindingAlgorithm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,8 +80,41 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="maze.cpp">
+    <ClCompile Include="Maze.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\AldousBroder.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\BinaryTree.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\DepthFirstSearch.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\HuntAndKill.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\Kruskals.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\GenerationAlgorithm.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\RecursiveBacktracking.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="generating\Prims.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="pathfinding\BreadthFirstSearch.cpp">
+      <Filter>Source Files\PathfindingAlgorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="pathfinding\AStar.cpp">
+      <Filter>Source Files\PathfindingAlgorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="pathfinding\PathfindingAlgorithm.cpp">
+      <Filter>Source Files\PathfindingAlgorithm</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
