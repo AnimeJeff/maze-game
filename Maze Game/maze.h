@@ -48,7 +48,6 @@ private:
 
 	std::vector<int> getAllNeighbours(int cellIndex)
 	{
-
 		std::vector<int> neighbours;
 		int northCellIndex = cellIndex - cols;
 		int southCellIndex = cellIndex + cols;
@@ -89,13 +88,13 @@ public:
 		cells[cellIndex] |= state;
 	}
 	
-
 	void unsetCellState(int cellIndex, int state)
 	{
 		if (isInvalidIndex(cellIndex)) return;
 		if (state < 0 || state > 512) return;
 		cells[cellIndex] &= ~state;
 	}
+	
 	bool checkCellState(int cellIndex, int state) const
 	{
 		if (isInvalidIndex(cellIndex)) return false;
@@ -104,7 +103,7 @@ public:
 	}
 
 	int generationStartCell;
-	void setGenerationAlgorithm(GenerationAlgorithm::AlgorithmType algorithm)
+	void setGenerationAlgorithm(GenerationAlgorithm::Type algorithm)
 	{
 		//std::cout << algorithm;
 		switch (algorithm)
@@ -156,7 +155,7 @@ public:
 
 
 private:
-	std::unique_ptr<PathfindingAlgorithm> pathfinder = std::make_unique<BreadthFirstSearch>(this);
+	std::unique_ptr<PathfindingAlgorithm> pathfinder = std::make_unique<AStar>(this);
 
 public:
 	std::vector<int> getPath() const
@@ -239,7 +238,7 @@ public:
 	}
 
 public:
-	Maze(int rows, int cols, int cellSize)
+	Maze(unsigned int rows, unsigned int cols, unsigned int cellSize)
 		:rows(rows), cols(cols), cellSize(cellSize), cells(rows* cols), cellCount(cells.size())
 	{
 		setSearchStart(0, 0);
@@ -277,6 +276,9 @@ public:
 		this->rows = rows;
 		this->cols = cols;
 		cellCount = rows * cols;
+		cells.resize(cellCount);
+
+		reset();
 	}
 	
 	sf::Vector2i getDimensions() {
@@ -311,7 +313,6 @@ public:
 		VISITED_TWICE = 0b1000000000,
 	};
 	
-	
 	void print_maze();
 	void reset();
 	void setSearchStart(int row, int col) 
@@ -332,11 +333,10 @@ public:
 	
 	std::vector<int> cells;
 private:
-	
 	void createPath(int cellIndex1, int cellIndex2) // creates a path between cell 1 and cell 2
 	{
 		int diff = cellIndex2 - cellIndex1;
-		if (diff == -cols) // north path
+		if (-diff == cols) // north path
 		{
 			cells[cellIndex1] |= VISITED | NORTH_PATH;
 			cells[cellIndex2] |= VISITED | SOUTH_PATH;
@@ -367,13 +367,11 @@ private:
 	std::uniform_int_distribution<int> intdist{ 0, 1000 };
 	std::mt19937 mt{ rd() };
 	std::vector<int> getNeighbours(int cellIndex, bool visited = false);
-	std::function<void(void)> generationAlgorithm;
 
-	
-	int rows;
-	int cols;
-	int cellSize;
-	int cellCount;
+	unsigned int rows;
+	unsigned int cols;
+	unsigned int cellSize;
+	unsigned int cellCount;
 	int pathfindingStartCell = -1;
 	int pathfindingEndCell = -1;
 

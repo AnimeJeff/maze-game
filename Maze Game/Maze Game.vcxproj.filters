@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Button.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -69,11 +66,26 @@
     <ClInclude Include="pathfinding\AStar.h">
       <Filter>Header Files\PathfindingAlgorithm</Filter>
     </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ellers.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Wilsons.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Sidewinder.h">
+      <Filter>Header Files\GenerationAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="DeadEndFilling.h">
+      <Filter>Header Files\PathfindingAlgorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="WallFollower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Button.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -115,6 +127,24 @@
     </ClCompile>
     <ClCompile Include="pathfinding\PathfindingAlgorithm.cpp">
       <Filter>Source Files\PathfindingAlgorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ellers.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="Wilsons.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="Sidewinder.cpp">
+      <Filter>Source Files\GenerationAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="DeadEndFilling.cpp">
+      <Filter>Source Files\PathfindingAlgorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="WallFollower.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
